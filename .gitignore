@@ -1,0 +1,13 @@
+/build/
+/dist/
+/d3d9.dll
+*.zip
+*.log
+*.exe
+SKGraphics_SteamCode.bin
+SKGraphics_Textures/
+ReShade/
+ReShade.ini
+reshade-shaders/
+__pycache__/
+*.pyc
