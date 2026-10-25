@@ -1,11 +1,14 @@
-SKGraphics 1.0
+SKGraphics 1.0.1
 Graphics customization for SENRAN KAGURA SHINOVI VERSUS
 
 ABOUT
+Version 1.0.1 is a documentation-only update and includes the unchanged 1.0 DLL.
+The DLL still reports version 1.0 in diagnostic logs.
+
 SKGraphics is a 32-bit Direct3D 9 proxy DLL configured through SKGraphics.ini.
 It adds custom internal rendering resolution, FXAA-style or SMAA antialiasing,
 higher-resolution and filtered player shadows, character outline controls,
-optional scene bloom, experimental ambient occlusion, and texture dumping and
+experimental scene bloom and ambient occlusion, and texture dumping and
 replacement. No replacement game executable is needed.
 
 SUPPORTED GAME BUILDS
@@ -25,11 +28,12 @@ performed using integrated AMD Radeon Graphics, an AMD Ryzen 7 5825U (8 cores),
 have not been verified. Not all scenes or mod combinations have been tested.
 
 INSTALLATION
-Download SKGraphics-1.0-Release.zip from:
+Download SKGraphics-1.0.1-Release.zip from:
 https://github.com/Zephyr-Lambert/SKGraphics/releases/latest
 The automatically generated source archives do not contain the compiled DLL.
 Steam: right-click the game -> Manage -> Browse local files.
 GOG Galaxy: select the game -> Manage installation -> Show folder.
+Default Galaxy path: C:\Program Files (x86)\GOG Galaxy\Games\Senran Kagura Shinovi Versus
 Heroic: open the game's page -> Options drop-down -> Browse Files.
 
 1. Close the game. Back up an existing mod DLL and configuration if upgrading.
@@ -112,6 +116,10 @@ consistent transparency around every silhouette; the original outline drawing
 and depth behavior are retained. The option is omitted from the shipped preset.
 
 BLOOM AND AMBIENT OCCLUSION
+Bloom is experimental. It can over-brighten scenes and wash out colors, and
+remains disabled in the supplied preset. Version 1.0.1 documents this limitation;
+it does not change the effect.
+
 Bloom adds glow to identified 3D scenes before their interface/fade/copy passes.
 It has been tested across gameplay, stage animations, VN scenes, the dressing
 room and the hub menu. Strong bloom can accentuate intentional lighting changes.

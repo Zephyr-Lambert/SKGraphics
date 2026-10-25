@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 — 2026-10-25
+
+- Clarifies that bloom is experimental: it can over-brighten scenes and wash out
+  colors. Bloom remains disabled in the supplied preset.
+- Documentation-only update. Rendering behavior and active preset values are
+  unchanged. Includes the same DLL as 1.0, which still reports 1.0 in logs.
+
 ## 1.0 — 2026-10-13
 
 - First public release packaging of the tested feature set.

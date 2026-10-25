@@ -1,4 +1,4 @@
-# SKGraphics 1.0 technical notes
+# SKGraphics 1.0.1 technical notes
 
 This consolidates the pre-release research. User installation instructions are
 in README.txt. Addresses here describe verified builds, not a general scanning
@@ -88,6 +88,9 @@ Unknown shaders and failed transformations retain the created original shader.
 No original game instruction stream is included in the release or repository.
 
 ## Bloom, depth and AO
+
+Bloom is experimental: it can over-brighten scenes and wash out colors.
+The 1.0.1 documentation update does not modify its rendering implementation.
 
 Bloom uses recognized vertex/pixel shader groups and verified draw boundaries to
 run before UI/fades or before a retained scene is copied. A recognized UI draw

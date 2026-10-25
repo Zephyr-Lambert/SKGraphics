@@ -1,4 +1,4 @@
-# SKGraphics 1.0 review and validation
+# SKGraphics 1.0.1 review and validation
 
 The 0.10.10 review covered the custom C proxy, hooks, in-memory patches,
 shader transforms, textures/categories, postprocess state cleanup, paths,
@@ -43,11 +43,15 @@ primary device/render thread, not arbitrary multidevice or concurrent rendering.
 Shared scratch arrays/fixed tables and non-atomic multi-slot hook installation
 remain limitations. Repeated OS protection failures cannot always be repaired.
 
-AO and outline opacity are experimental. Testing covers the systems listed
+Bloom, AO and outline opacity are experimental. Bloom can over-brighten scenes
+and wash out colors. Testing covers the systems listed
 below, not every GPU/runner, costume, scene, binary or mod combination. Shader parser fuzzing does not test D3DX image decoding or
 prove absence of vulnerabilities. No unsupported performance improvement is claimed.
 
 ## Evidence and validation
+
+- 1.0.1 is documentation-only. Rendering code, active INI values and the packaged
+  1.0 DLL are unchanged; the DLL continues to report version 1.0.
 
 - 0.10.12: 17 host mock suites and 17 SHA-256 vectors passed. Actual GOG executable
   and Steam loaded-code tests verified detection, all permitted shadow sizes,
