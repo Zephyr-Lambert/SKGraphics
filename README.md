@@ -13,7 +13,7 @@ Supports both **GOG 01.06** and **Steam 01.06** builds, including Steam's
 - FXAA-style antialiasing and SMAA 1x.
 - Increased player-shadow resolutions up to 12288 and optional 3x3/5x5 filtering.
 - Character outline visibility and thickness.
-- Scene bloom applied before identified interface elements are drawn.
+- Experimental scene bloom applied before identified interface elements are drawn.
 - Experimental ambient occlusion with an option to prevent characters from receiving AO.
 - Texture dumping, DDS/PNG replacement and manual dump-category filtering.
 - Optional loading of a separately installed 32-bit ReShade DLL.
