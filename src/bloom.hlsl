@@ -1,8 +1,11 @@
 sampler2D Source : register(s0);
 float4 Parameters : register(c0);
+float4 Options : register(c1); // x: 0 = brightest channel, 1 = luminance
 
 float3 bright(float3 color) {
-    float level = max(color.r, max(color.g, color.b));
+    // Luminance lets vivid but not truly bright colors (pure red, blue) bloom less.
+    float level = Options.x > 0.5 ? dot(color, float3(0.2126, 0.7152, 0.0722))
+                                  : max(color.r, max(color.g, color.b));
     float knee = max(Parameters.w, 0.00001);
     float soft = clamp(level - Parameters.z + knee, 0.0, 2.0 * knee);
     soft = soft * soft / (4.0 * knee);
@@ -47,4 +50,19 @@ float4 extractChanged(float2 uv : TEXCOORD0) : COLOR0 {
     c += changedBright(uv + float2(-d.x,d.y));
     c += changedBright(uv + float2(d.x,d.y));
     return float4(c * 0.25, 0.0);
+}
+
+// Tone-mapped composite. The scene is expanded with the inverse of the curve
+// 1 - exp(-x), bloom is added, and the result is compressed with the same curve.
+// Pixels without bloom come back unchanged; added light rolls off towards white
+// instead of clipping. Working on the brightest channel keeps each color's hue.
+float4 compositeToneMapped(float2 uv : TEXCOORD0) : COLOR0 {
+    float3 scene = tex2D(Background, uv).rgb;
+    float3 bloom = tex2D(Source, uv).rgb * Parameters.x;
+    float v = max(scene.r, max(scene.g, scene.b));
+    float expand = v > 0.00001 ? -log(1.0 - min(v, 0.999)) / v : 1.0;
+    float3 x = scene * expand + bloom;
+    float vx = max(x.r, max(x.g, x.b));
+    float compress = vx > 0.00001 ? (1.0 - exp(-vx)) / vx : 1.0;
+    return float4(x * compress, 1.0);
 }

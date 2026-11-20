@@ -1,3 +1,8 @@
+In-game menu font: font8x8_basic.h by Daniel Hepper, based on public-domain
+VGA fonts (Marcel Sondaar, IBM). Public domain.
+https://github.com/dhepper/font8x8
+Converted to src/menu_font.h; cell 127 replaced with a solid block.
+
 SMAA by Jorge Jimenez and collaborators
 https://github.com/iryoku/smaa
 

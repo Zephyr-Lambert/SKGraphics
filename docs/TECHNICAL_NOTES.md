@@ -1,4 +1,4 @@
-# SKGraphics 1.0.1 technical notes
+# SKGraphics 2.0 technical notes
 
 This consolidates the pre-release research. User installation instructions are
 in README.txt. Addresses here describe verified builds, not a general scanning
@@ -56,8 +56,12 @@ APIs. The mod neither replaces nor modifies those platform DLLs.
 The device state records logical output and physical rendering dimensions.
 Matching full-size render/depth resources, viewports and scissors are scaled;
 unrelated textures are preserved. Game-facing dimension queries translate back
-where needed. The override requires windowed presentation, no multisampling and
-an exact aspect-ratio match, with width 320..16384 and height 180..16384.
+where needed. The override requires windowed presentation and no
+multisampling, with width 320..16384 and height 180..16384. Since 2.0, when the
+output shape differs from the configured size (the game letterboxes its 16:9
+picture on other screens), one axis is enlarged to the output's shape
+(rounded), keeping a uniform scale; a fitted size above 16384 disables the
+override.
 High-resolution CreateDevice failure retries original dimensions.
 
 AA copies the final image and draws an FXAA-style pass or SMAA 1x pipeline with
@@ -89,8 +93,10 @@ No original game instruction stream is included in the release or repository.
 
 ## Bloom, depth and AO
 
-Bloom is experimental: it can over-brighten scenes and wash out colors.
-The 1.0.1 documentation update does not modify its rendering implementation.
+Composite 0 (add) can over-brighten scenes and wash out colors. Composite 2
+(tone-mapped) copies the scene and maps it through an inverse/forward
+`1 - exp(-x)` curve on the brightest channel, so pixels without bloom are
+unchanged and highlights roll off while keeping their hue.
 
 Bloom uses recognized vertex/pixel shader groups and verified draw boundaries to
 run before UI/fades or before a retained scene is copied. A recognized UI draw
@@ -118,6 +124,42 @@ preserved. The AO application skips actor-mask pixels, but AO generation still
 sees actor depth. Floating icons are a separate class. Unsupported stencil use
 and mask failure skip AO conservatively. This is shader classification, not a
 list of model filenames or a claim to recognize every animated object.
+
+## Character shadows, coverage and circle shadows
+
+The game renders one animated shadow: the player's, drawn into the shadow map
+before the main scene. Facts used by the extra-shadow code (`cpu_shadow.h`,
+`shadow_coverage.h`, `circle_preview.h`):
+
+- Shadow writer VS `d316c720…` (SHA-256 of the shader bytecode). Its constant
+  table: bone palette `g_matBone` = c16..143 (32 float4x4), light
+  world-view-projection `g_matLightWVP` = c144..147.
+- Character VSs use the same bone palette at c16..143 and the same vertex
+  declaration (stream 0, stride 28) as the writer. Playable characters use
+  two known VS signatures; crowd enemies use VS `f1ebe923…`, accepted only
+  when its constant table matches.
+- Across all player components, inverse(world) x lightWVP is the same light
+  projection, so other characters can be drawn into the shadow map with
+  their own world matrix times that common projection.
+- Main-pass draws come after the shadow pass, so extra shadows use the
+  previous frame's poses (one frame behind). Player draws are excluded by
+  geometry plus exact world matrix.
+- The two shadow receiver VSs read the light projection from c144..147 too;
+  camera WVP is c8..11. Coverage divides the X/Y columns of c144..147 by
+  (setting + 1) for the writer, the receivers and the replayed draws, and
+  restores them after each draw. Depth, texture size and filtering are
+  unchanged.
+- Circle shadows: VS `ce743505…`, 2 triangles, alpha-blended (src 5, dst 6),
+  no depth write, stream 0 stride 32, texture content SHA-256 `79c8066a…`.
+  A circle is hidden only when its world matrix (ignoring height) matches a
+  character that received a real shadow this frame. The player's circle is
+  kept, and characters outside the shadow area keep theirs.
+
+Transformation backdrops (AO exclusion) are identified by three texture
+content hashes paired with the VS that draws them (`transformation_background.h`);
+the VS alone is shared with stage scenery.
+
+Full hashes are in the source files named above.
 
 ## Texture handling
 
@@ -169,3 +211,38 @@ python3 tests/build_profiles.py /path/to/GOG.exe /path/to/Steam.exe /path/to/SKG
 
 The historical capture input is needed only for that optional developer test.
 No user needs it to install or play with 1.0.
+
+## 2.0 additions
+
+**Movie volume.** The CRI Mana AtomVoice volume setter is shared with ordinary
+game audio, so it is not hooked. Instead its two movie call sites are
+redirected to a wrapper that scales the volume. The setter and call sites are
+found by byte pattern in the loaded code section (Steam's code is only
+readable at run time). Exactly one setter and exactly two call sites of the
+shape `mov reg,[reg+148h]; push reg; call setter; add esp,8` are required;
+the third (audio) caller has a different shape and is never touched. Found
+at GOG RVAs 0x1c3e70 / 0x22b4fc / 0x22b985 and Steam RVAs 0x1d6a6d /
+0x2406ec / 0x240b75. Protection or flush failure restores the original calls.
+
+**Native Windows drivers.** DXVK accepts two things the native D3D9 runtime
+and an AMD driver did not:
+- Shader validation: the shadow-softening code read temp components before
+  writing them, and used LRP with a destination overlapping a source. Both
+  were removed; `tests/filter_semantics.py` and `filter_init_mock` check the
+  generated code for both.
+- State blocks: capturing and applying a `D3DSBT_ALL` state block mid-frame
+  made the scene flash colors, even with nothing drawn. Bloom and AO save and
+  restore each state they change by hand (`BloomSaved` in `bloom.h`);
+  `[Diagnostics] BloomStateBlock=1` restores the old path for comparison.
+
+**Menu.** Drawn at Present after AA with fixed-function pretransformed quads
+(FVF 0x144) and an embedded 8x8 font texture, inside a full state block.
+Input is read with `GetAsyncKeyState` and `XInputGetState` or the winmm joystick API (D-pad, and
+LB+RB+Back+Start to open) only while the game window has focus;
+nothing is consumed. Saving uses `WritePrivateProfileStringW`. Presets are
+`Section.Key=Value` lines in `SKGraphics_Presets.ini`, restricted to an
+allowlist of sections.
+
+**Live reload.** Optional (`LiveReload=1`). The INI's write time and size are
+polled every 30 frames; a change is applied after two identical readings.
+

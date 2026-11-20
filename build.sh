@@ -18,10 +18,10 @@ PYGEN
 {
  echo 'LIBRARY KERNEL32.dll'
  echo 'EXPORTS'
- for symbol in GetPrivateProfileStringW GetPrivateProfileSectionNamesW GetPrivateProfileSectionW GetFileAttributesW CreateDirectoryW DeleteFileW InitializeCriticalSection EnterCriticalSection LeaveCriticalSection GetModuleHandleW GetCurrentProcess FlushInstructionCache GetSystemDirectoryW LoadLibraryW GetProcAddress GetModuleFileNameW CreateFileW WriteFile VirtualProtect CloseHandle GetPrivateProfileIntW; do
+ for symbol in GetPrivateProfileStringW GetPrivateProfileSectionNamesW GetPrivateProfileSectionW GetFileAttributesW GetFileAttributesExW CreateDirectoryW DeleteFileW InitializeCriticalSection EnterCriticalSection LeaveCriticalSection GetModuleHandleW GetCurrentProcess FlushInstructionCache GetSystemDirectoryW LoadLibraryW GetProcAddress GetModuleFileNameW CreateFileW WriteFile VirtualProtect CloseHandle GetPrivateProfileIntW WritePrivateProfileStringW; do
   echo "$symbol=KERNEL32.$symbol"
  done
 } > build/kernel32.def
 ld -mi386pe --dll --out-implib build/libkernel32.a -o build/unused.dll build/kernel32.def
 gcc -m32 -Os -Wall -Wextra -Werror -Wno-misleading-indentation -fleading-underscore -ffreestanding -fno-builtin -fno-pic -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-ident -mpreferred-stack-boundary=2 -mincoming-stack-boundary=2 -c src/diagnostic.c -o build/diagnostic.o
-ld -mi386pe --dll --entry _DllMain --image-base 0x10000000 --dynamicbase --nxcompat --subsystem windows --enable-reloc-section -o d3d9.dll src/exports.def build/diagnostic.o build/libkernel32.a
+ld -mi386pe -s --dll --entry _DllMain --image-base 0x10000000 --dynamicbase --nxcompat --subsystem windows --enable-reloc-section -o d3d9.dll src/exports.def build/diagnostic.o build/libkernel32.a

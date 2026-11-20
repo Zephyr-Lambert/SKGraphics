@@ -25,6 +25,22 @@ def instructions(w):
   if op!=65534:yield op,t,w[p+1:p+n+1]
   p+=n+1
  raise AssertionError('missing END')
+def strict_windows_checks(w):
+ """Rules the native Windows D3D9 runtime enforces and DXVK does not:
+ no temp component read before it is written (texld reads all four
+ coordinate components), and no LRP (rejected on a Windows driver)."""
+ written={}
+ for op,t,a in instructions(w):
+  if op in(31,81):continue
+  assert op!=18,'LRP emitted'
+  d=a[0] if a else 0;mask=(d>>16)&15
+  for s in a[1:]:
+   if ((s>>28)&7)|((s>>8)&24):continue
+   sw=(s>>16)&255;need=0
+   for c in range(4):
+    if op==66 or mask>>c&1:need|=1<<((sw>>2*c)&3)
+   assert not need&~written.get(s&2047,0),('uninitialized read',op,hex(s))
+  if a and not(((d>>28)&7)|((d>>8)&24)):written[d&2047]=written.get(d&2047,0)|mask
 def f32(v):return struct.unpack('<f',struct.pack('<f',v))[0]
 def run(w,case,offset=(0,0)):
  regs={(1,0):[.3,.6,0,case['fog']],(1,1):[.8,.7,.6,case['alpha']],(1,2):case['position'],(2,160):[.35,.45,.55,.7],(2,177):[.1,.2,.3,.4],(2,176):[.4]*4}
@@ -82,6 +98,7 @@ for start in [0x40840,0x40b40]:
    for radius in [25,200,800]:
     count=fn(src,len(original)*4,quality,radius,size,out);assert count>0
     filtered=list(out[:count]);assert sum(1 for _ in instructions(filtered))<512
+    strict_windows_checks(filtered)
     r=quality;step=radius/(100*r*size)
     for case in cases:
      actual=run(filtered,case)

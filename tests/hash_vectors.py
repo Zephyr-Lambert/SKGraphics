@@ -7,7 +7,7 @@ import subprocess
 
 root = Path(__file__).resolve().parent.parent
 source = root / 'build/hash_test.c'
-source.write_text('typedef unsigned int U;\n#include "../src/texture_hash.h"\nvoid hash_test(const void*p,U n,char*out){texture_hash(p,n,out);}\n')
+source.write_text('typedef unsigned int UINT;\n#include "../src/texture_hash.h"\nvoid hash_test(const void*p,UINT n,char*out){texture_hash(p,n,out);}\n')
 library = root / 'build/hash_test.so'
 subprocess.run(['gcc', '-shared', '-fPIC', '-O2', str(source), '-o', str(library)], check=True)
 fn = ctypes.CDLL(str(library)).hash_test

@@ -2,8 +2,8 @@
 set -eu
 cd "$(dirname "$0")/.."
 mkdir -p build
-for test in review_mock defaults_mock mock chain_mock character_mock character_mask_mock aa_mock smaa_mock shadow_mock texture_mock steam_texture_mock category_mock probe_mock scene_mock bloom_mock ao_depth_mock ao_mock; do
- gcc -Os -Wno-attributes -ffreestanding -fno-builtin -fno-pic -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -c "tests/$test.c" -o "build/$test-host.o"
+for test in movie_volume_mock review_mock defaults_mock live_reload_mock menu_mock filter_init_mock mock chain_mock character_mock character_mask_mock aa_mock smaa_mock shadow_mock texture_mock steam_texture_mock category_mock probe_mock scene_mock actor_shadow_mock cpu_shadow_mock coverage_mock crowd_mock circle_capture_mock circle_owner_mock background_probe_mock transformation_background_mock bloom_mock ao_depth_mock ao_mock; do
+ gcc -Os -mstackrealign -Wno-attributes -ffreestanding -fno-builtin -fno-pic -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables -c "tests/$test.c" -o "build/$test-host.o"
  ld -e _start -o "build/$test-host" "build/$test-host.o"
  "build/$test-host"
  echo "Host $test passed (not a GPU test)."

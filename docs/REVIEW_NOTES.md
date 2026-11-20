@@ -1,33 +1,25 @@
-# SKGraphics 1.0.1 review and validation
+# SKGraphics 2.0 review and validation
 
-The 0.10.10 review covered the custom C proxy, hooks, in-memory patches,
-shader transforms, textures/categories, postprocess state cleanup, paths,
-configuration and logging. Later Steam profile changes received targeted
-real-byte and mock tests. This is not an independent security audit, and does
-not audit SMAA, Windows/Wine, DXVK, D3DX or ReShade.
+Scope: the custom C proxy, hooks, in-memory patches, shader transforms,
+textures/categories, post-process state handling, paths, configuration,
+logging and the in-game menu. This is not an independent security audit, and
+does not audit SMAA, Windows/Wine, DXVK, D3DX or ReShade.
 
-## Changes made during review
-
-- Disabled logging avoids diagnostic surface queries, signature bookkeeping and
-  viewport sampling once no log is open or its budget is exhausted.
-- Failed vtable page-protection restoration rolls back the pointer and retries
-  protection restoration, without marking the hook installed.
-- D3DX is loaded once successfully and shared across effects and texture work.
-- Failed FXAA compilation releases partial bytecode; string logging accepts null.
-- Near-limit paths are rejected before configuration/backend suffixes are added.
-
-## Existing safeguards
+## Safeguards
 
 - No network client, download/update feature, shell execution or elevation code.
-- Executable patches require exact GOG/Steam build identity and instruction guards;
+- Executable patches require exact GOG/Steam build identity and instruction guards
+  (movie volume: exactly one setter and two call sites found by byte pattern);
   texture imports also require the resolved original export. Unknown builds skip
   the game-specific hooks. Shadow overrides preflight caps and both allocations.
 - Texture output paths use SHA-256 names. Categories never become paths. Existing
   dumps are preserved; incomplete writes are deleted. Output counts/bytes are bounded.
 - Shader transforms require known hashes or validated bounded input; failed
   transforms retain the original. Effects preserve state and have failure paths.
-- Missing enhancement/logging options do not enable them. Supplied preset differs
-  intentionally from missing-key fallback behavior.
+- Missing enhancement/logging options do not enable them. The supplied INI
+  differs intentionally from missing-key fallback behavior.
+- The menu and presets only write keys of known sections to SKGraphics.ini;
+  input is read, never blocked, and only while the game window has focus.
 
 ## Limits and trust boundaries
 
@@ -43,40 +35,31 @@ primary device/render thread, not arbitrary multidevice or concurrent rendering.
 Shared scratch arrays/fixed tables and non-atomic multi-slot hook installation
 remain limitations. Repeated OS protection failures cannot always be repaired.
 
-Bloom, AO and outline opacity are experimental. Bloom can over-brighten scenes
-and wash out colors. Testing covers the systems listed
-below, not every GPU/runner, costume, scene, binary or mod combination. Shader parser fuzzing does not test D3DX image decoding or
-prove absence of vulnerabilities. No unsupported performance improvement is claimed.
+SMAA, AO and outline opacity are experimental. Bloom in add mode (Composite=0)
+can over-brighten scenes and wash out colors. Testing covers the systems listed
+below, not every GPU/runner, costume, scene, binary or mod combination. Shader
+parser fuzzing does not test D3DX image decoding or prove absence of
+vulnerabilities. No unsupported performance improvement is claimed.
 
-## Evidence and validation
+## Validation
 
-- 1.0.1 is documentation-only. Rendering code, active INI values and the packaged
-  1.0 DLL are unchanged; the DLL continues to report version 1.0.
-
-- 0.10.12: 17 host mock suites and 17 SHA-256 vectors passed. Actual GOG executable
-  and Steam loaded-code tests verified detection, all permitted shadow sizes,
-  operand-only changes, protection rollback and rejection of altered guards.
-  Protected Steam disk code was rejected as intended.
-- 0.10.10: 20,000 deterministic malformed shader cases passed ASan/UBSan.
-  LeakSanitizer was disabled because the runner could not inspect task state;
-  this was not a leak-test result.
-- Project-owner 0.10.12 tests: standalone GOG, ordinary Steam, and Steam's
-  "GOG Version" worked visually. Logs confirmed 3840x2160, FXAA, 8192 filtered
-  shadows, AO with actor exclusion, bloom and a replacement in all three runs.
-  Ordinary Steam also produced new texture dumps. These runs used default
-  outlines; earlier custom-outline tests were on the standalone GOG build.
-- 0.10.13 changed only names/comments. 1.0 changes the version banner, documentation
-  and packaging without changing the rendering logic or active INI values.
-- 1.0: rebuilt successfully; all 17 host mock suites and 17 SHA-256 vectors
-  passed. Source comparison confirmed only the version banner changed from
-  0.10.13; active INI entries are identical. Host tests do not replace GPU tests.
-
-- Additional project-owner testing confirmed native Windows 11 operation on an
-  AMD Ryzen 7 5825U (8 cores), integrated AMD Radeon Graphics, 16 GB DDR4 RAM,
-  and a 1920 x 1080 display. The Linux test system runs Bazzite with an NVIDIA
-  GeForce RTX 2060, AMD Ryzen 5 3600 (6 cores), 16 GB DDR4 RAM, and a
-  2560 x 1440 display, through Heroic/GE-Proton and Steam/Proton. These are
-  reported test configurations, not minimum requirements or benchmark results.
+- Automated (host, no GPU): 30 mock test suites, 17 SHA-256 vectors, a
+  semantic comparison of the generated shadow-softening shaders against the
+  game's originals (6732 comparisons), and checks that generated shaders follow
+  the native Windows validation rules. New tests were checked by deliberately
+  breaking the code they cover. Earlier releases also passed 20,000 malformed
+  shader cases under ASan/UBSan.
+- In-game (project owner): GOG and Steam 01.06, including executables patched
+  by a separate logo-skip mod; native Windows 11 and Linux (Heroic/GE-Proton,
+  Steam/Proton) and Steam Deck. Covered: rendering resolution (16:9 and
+  fitted 16:10), presets up to Ultra, FXAA/SMAA, shadow sizes up to 16384 with
+  softening, CPU/crowd shadows and coverage, circle hiding, outlines, bloom
+  modes, AO and its exclusions, movie volume, the menu with keyboard and
+  Xbox/Switch/PS4 controllers, live reload and texture dumping/replacement.
+- Test systems: AMD Ryzen 7 5825U with integrated Radeon graphics, 16 GB,
+  1920 x 1080, Windows 11; AMD Ryzen 5 3600 with NVIDIA GeForce RTX 2060,
+  16 GB, 2560 x 1440, Bazzite; Steam Deck. These are reported test
+  configurations, not minimum requirements or benchmark results.
 
 ## Reproduction
 
