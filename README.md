@@ -5,18 +5,24 @@ Supports both **GOG 01.06** and **Steam 01.06** builds, including Steam's
 “GOG Version” launch option, using one 32-bit Direct3D 9 proxy DLL.
 
 > [!NOTE]
-> **AI disclosure:** This mod was developed through vibe coding using GPT-6 Astra, with manual in-game testing by me. The source and test scripts are available for review and modification. Bundled SMAA is separately authored third-party work.
+> **AI disclosure:** This mod was developed through vibe coding using GPT-6 Astra (1.x). the mod was then reviewed, optimized, and build upon with Claude Opus 5.5 for (2.0), with manual in-game testing by me. The source and test scripts are available for review and modification. Bundled SMAA is separately authored third-party work.
 
 ## Features
 
+- In-game settings menu (F9, or LB + RB + Back + Start on a controller) with Lite, Standard, High and Ultra presets.
 - Custom internal rendering resolution, including supersampling.
-- FXAA-style antialiasing and SMAA 1x.
-- Increased player-shadow resolutions up to 12288 and optional 3x3/5x5 filtering.
-- Character outline visibility and thickness.
-- Experimental scene bloom applied before identified interface elements are drawn.
-- Experimental ambient occlusion with an option to prevent characters from receiving AO.
+- FXAA-style antialiasing and experimental SMAA 1x.
+- Player-shadow resolutions up to 16384 with optional 3x3/5x5 softening.
+- Animated shadows for CPU-controlled characters and crowd enemies, and a wider shadow area.
+- Character outline visibility, thickness and color.
+- Scene bloom applied before identified interface elements are drawn, with tone-mapped blending.
+- Experimental ambient occlusion (very demanding) with character and transformation-background exclusion.
+- Movie volume control without affecting other game audio.
 - Texture dumping, DDS/PNG replacement and manual dump-category filtering.
 - Optional loading of a separately installed 32-bit ReShade DLL.
+
+The included settings match the Standard preset (3840 × 2160). The Ultra preset
+(7680 × 4320 with 16384 shadows) is very demanding.
 
 ## Installation
 
@@ -33,7 +39,7 @@ Supports both **GOG 01.06** and **Steam 01.06** builds, including Steam's
 3. Extract the contents of the release ZIP into the game folder.  
    The folder should already contain `SKShinoviVersus.exe`.
 
-4. Edit `SKGraphics.ini` to fit your preferences. Use the game's windowed or borderless mode for custom rendering resolution.
+4. Use the game's borderless window mode for custom rendering resolution (fullscreen is not supported). Change settings in game with **F9**, or edit `SKGraphics.ini`.
 
 5. Done. Check the included `README.txt` for more information.
 
@@ -54,7 +60,7 @@ Supports both **GOG 01.06** and **Steam 01.06** builds, including Steam's
    - For Heroic Games Launcher: Open the game's **Settings → Advanced → Environment Variables**.  
      Add `WINEDLLOVERRIDES` to the **NAME** field and `d3d9=n,b` to the **VALUE** field, then click **+**.
 
-5. Edit `SKGraphics.ini` to fit your preferences. Use the game's windowed or borderless mode for custom rendering resolution.
+5. Use the game's borderless window mode for custom rendering resolution (fullscreen is not supported). Change settings in game with **F9**, or edit `SKGraphics.ini`.
 
 6. Done. Check the included `README.txt` for more information.
 
@@ -101,6 +107,7 @@ When updating ReShade, move its newly installed `d3d9.dll` into the `ReShade` fo
 
 - [User guide](README.txt)
 - [Configuration and option descriptions](SKGraphics.ini)
+- [Presets](SKGraphics_Presets.ini)
 - [Resolution reference](SKGraphics_Resolutions.txt)
 - [Texture category template](SKGraphics_TextureCategories.ini)
 - [Changelog](CHANGELOG.md)
@@ -128,7 +135,7 @@ Steam/Proton, using an NVIDIA GeForce RTX 2060, AMD Ryzen 5 3600 (6 cores),
 16 GB DDR4 RAM, and a 2560 × 1440 display. Native Windows 11 testing was
 also performed using integrated AMD Radeon Graphics, an AMD Ryzen 7 5825U
 (8 cores), 16 GB DDR4 RAM, and a 1920 × 1080 display. Other hardware and
-runner combinations have not been verified. AO and outline transparency
+runner combinations have not been verified. SMAA, AO and outline transparency
 remain experimental.
 
 ## Development and license
